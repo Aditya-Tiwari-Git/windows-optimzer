@@ -18,12 +18,13 @@ from .optimization_widget import OptimizationWidget
 from .styles import COLORS, set_dark_mode, set_light_mode
 
 class SidebarButton(QPushButton):
-    """Custom sidebar button with icon and text."""
+    """Custom sidebar button with text."""
     def __init__(self, icon_name, text, parent=None):
         super().__init__(parent)
         self.setText(text)
-        self.setIcon(QIcon(icon_name))
-        self.setIconSize(QSize(24, 24))
+        # Don't use icons for now to avoid missing icon errors
+        # self.setIcon(QIcon(icon_name))
+        # self.setIconSize(QSize(24, 24))
         self.setMinimumHeight(48)
         self.setCheckable(True)
         self.setCursor(Qt.PointingHandCursor)
@@ -172,6 +173,10 @@ class MainWindow(QMainWindow):
             self.toggle_theme_btn.setText("Toggle Light Mode")
         else:
             self.toggle_theme_btn.setText("Toggle Dark Mode")
+            
+        # Signal theme change to widgets that need it
+        if hasattr(self.cleaning_widget, 'theme_changed'):
+            self.cleaning_widget.theme_changed.emit(self.dark_mode)
     
     def apply_styles(self):
         """Apply the current theme styles to all components."""
@@ -186,12 +191,20 @@ class MainWindow(QMainWindow):
         about_box.setWindowTitle("About Windows System Optimizer")
         about_box.setTextFormat(Qt.RichText)
         
+        # Set icon for the about dialog
+        icon_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "app_icon.png")
+        if os.path.exists(icon_path):
+            about_box.setWindowIcon(QIcon(icon_path))
+            # Add icon to the about dialog content
+            pixmap = QPixmap(icon_path).scaled(64, 64, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            about_box.setIconPixmap(pixmap)
+        
         about_text = """
         <h3>Windows System Optimizer</h3>
         <p>Version 1.0.0</p>
         <p>A modern Windows system optimization utility with cleaning, 
-        network diagnostics, and performance monitoring features.</p>
-        <p>&copy; 2023 WinOptimizer</p>
+        network diagnostics, and performance monitoring features. Made with 🧡 by AADI</p>
+        <p>&copy; 2025 WinOptimizer</p>
         """
         
         about_box.setText(about_text)

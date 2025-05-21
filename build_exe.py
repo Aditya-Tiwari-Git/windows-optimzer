@@ -134,7 +134,7 @@ def build_executable(args):
     version_file = create_version_file(args.version)
     
     # Build command
-    cmd = ['pyinstaller', 'main.py']
+    cmd = ['pyinstaller', 'run_app.py']
     
     # Add name
     cmd.extend(['--name', args.name])
@@ -164,6 +164,7 @@ def build_executable(args):
     
     # Add data files
     cmd.extend(['--add-data', f'scripts{os.pathsep}scripts'])
+    cmd.extend(['--add-data', f'assets{os.pathsep}assets'])
     
     # Explicitly include problematic packages
     cmd.extend(['--hidden-import', 'pkg_resources.py2_warn'])

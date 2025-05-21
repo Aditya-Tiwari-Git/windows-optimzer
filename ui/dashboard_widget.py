@@ -21,7 +21,7 @@ matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-from ..services.monitor import SystemMonitor
+from services.monitor import SystemMonitor
 from .styles import COLORS
 
 class MetricCard(QFrame):

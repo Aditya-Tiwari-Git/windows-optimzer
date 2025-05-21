@@ -13,9 +13,9 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
 from PyQt5.QtCore import Qt, pyqtSignal, QThread
 from PyQt5.QtGui import QFont, QIcon
 
-from ..services.quickfix import QuickFixTools
-from ..services.driver_updater import DriverUpdater
-from ..services.monitor import SystemMonitor
+from services.quickfix import QuickFixTools
+from services.driver_updater import DriverUpdater
+from services.monitor import SystemMonitor
 from .loading_screen import LoadingOverlay
 
 class OptimizationTask(QThread):

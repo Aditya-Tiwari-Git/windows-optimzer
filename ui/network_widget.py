@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
 from PyQt5.QtCore import Qt, pyqtSignal, QThread
 from PyQt5.QtGui import QFont
 
-from ..services.network import NetworkDiagnostics
+from services.network import NetworkDiagnostics
 from .loading_screen import LoadingOverlay
 
 class NetworkTask(QThread):

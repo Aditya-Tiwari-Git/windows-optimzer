@@ -24,25 +24,17 @@ class SystemCleaner:
         self.temp_dir = tempfile.gettempdir()
     
     def clean_chrome_cache(self):
-        """Clean Google Chrome cache and temporary files."""
+        """Clean Google Chrome cache and cookies (not history)."""
         try:
             # Kill Chrome processes first
             subprocess.run(['taskkill', '/F', '/IM', 'chrome.exe'], 
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             
-            # Chrome cache path
-            chrome_cache_path = os.path.join(
-                self.user_profile, 
-                'AppData\\Local\\Google\\Chrome\\User Data\\Default\\Cache'
-            )
-            
-            # Additional Chrome paths to clean
+            # Chrome paths to clean (only cache and cookies)
             chrome_paths = [
                 os.path.join(self.user_profile, 'AppData\\Local\\Google\\Chrome\\User Data\\Default\\Cache'),
                 os.path.join(self.user_profile, 'AppData\\Local\\Google\\Chrome\\User Data\\Default\\Code Cache'),
                 os.path.join(self.user_profile, 'AppData\\Local\\Google\\Chrome\\User Data\\Default\\GPUCache'),
-                os.path.join(self.user_profile, 'AppData\\Local\\Google\\Chrome\\User Data\\Default\\Media Cache'),
-                os.path.join(self.user_profile, 'AppData\\Local\\Google\\Chrome\\User Data\\Default\\Application Cache'),
             ]
             
             # Clean each path
@@ -50,27 +42,35 @@ class SystemCleaner:
                 if os.path.exists(path):
                     self._safe_clean_directory(path)
             
-            logger.info("Chrome cache cleaned successfully")
+            # Clean cookies
+            cookies_path = os.path.join(self.user_profile, 'AppData\\Local\\Google\\Chrome\\User Data\\Default\\Cookies')
+            if os.path.exists(cookies_path):
+                try:
+                    # Try to remove the file (it may be locked)
+                    os.remove(cookies_path)
+                except (PermissionError, OSError):
+                    # If locked, can't delete
+                    pass
+            
+            logger.info("Chrome cache and cookies cleaned successfully")
             return True
         
         except Exception as e:
-            logger.error(f"Error cleaning Chrome cache: {str(e)}")
+            logger.error(f"Error cleaning Chrome cache and cookies: {str(e)}")
             raise
     
     def clean_edge_cache(self):
-        """Clean Microsoft Edge cache and temporary files."""
+        """Clean Microsoft Edge cache and cookies (not history)."""
         try:
             # Kill Edge processes first
             subprocess.run(['taskkill', '/F', '/IM', 'msedge.exe'], 
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             
-            # Edge cache paths
+            # Edge paths to clean (only cache and cookies)
             edge_paths = [
                 os.path.join(self.user_profile, 'AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\Cache'),
                 os.path.join(self.user_profile, 'AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\Code Cache'),
                 os.path.join(self.user_profile, 'AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\GPUCache'),
-                os.path.join(self.user_profile, 'AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\Media Cache'),
-                os.path.join(self.user_profile, 'AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\Application Cache'),
             ]
             
             # Clean each path
@@ -78,11 +78,126 @@ class SystemCleaner:
                 if os.path.exists(path):
                     self._safe_clean_directory(path)
             
-            logger.info("Edge cache cleaned successfully")
+            # Clean cookies
+            cookies_path = os.path.join(self.user_profile, 'AppData\\Local\\Microsoft\\Edge\\User Data\\Default\\Cookies')
+            if os.path.exists(cookies_path):
+                try:
+                    # Try to remove the file (it may be locked)
+                    os.remove(cookies_path)
+                except (PermissionError, OSError):
+                    # If locked, can't delete
+                    pass
+            
+            logger.info("Edge cache and cookies cleaned successfully")
             return True
         
         except Exception as e:
-            logger.error(f"Error cleaning Edge cache: {str(e)}")
+            logger.error(f"Error cleaning Edge cache and cookies: {str(e)}")
+            raise
+    
+    def clean_firefox_cache(self):
+        """Clean Mozilla Firefox cache and cookies (not history)."""
+        try:
+            # Kill Firefox processes first
+            subprocess.run(['taskkill', '/F', '/IM', 'firefox.exe'], 
+                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            
+            # Find Firefox profile folder
+            firefox_profile_path = os.path.join(self.user_profile, 'AppData\\Roaming\\Mozilla\\Firefox\\Profiles')
+            
+            if os.path.exists(firefox_profile_path):
+                # Firefox often has a randomized profile folder name
+                profiles = [d for d in os.listdir(firefox_profile_path) if os.path.isdir(os.path.join(firefox_profile_path, d))]
+                
+                for profile in profiles:
+                    profile_dir = os.path.join(firefox_profile_path, profile)
+                    
+                    # Cache files
+                    cache_dir = os.path.join(profile_dir, 'cache2')
+                    if os.path.exists(cache_dir):
+                        self._safe_clean_directory(cache_dir)
+                    
+                    # Cookies file (cookies.sqlite)
+                    cookies_file = os.path.join(profile_dir, 'cookies.sqlite')
+                    if os.path.exists(cookies_file):
+                        try:
+                            os.remove(cookies_file)
+                        except (PermissionError, OSError):
+                            pass
+            
+            logger.info("Firefox cache and cookies cleaned successfully")
+            return True
+        
+        except Exception as e:
+            logger.error(f"Error cleaning Firefox cache and cookies: {str(e)}")
+            raise
+    
+    def clean_opera_cache(self):
+        """Clean Opera browser cache and cookies (not history)."""
+        try:
+            # Kill Opera processes first
+            subprocess.run(['taskkill', '/F', '/IM', 'opera.exe'], 
+                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            
+            # Opera cache paths
+            opera_paths = [
+                os.path.join(self.user_profile, 'AppData\\Local\\Opera Software\\Opera Stable\\Cache'),
+                os.path.join(self.user_profile, 'AppData\\Local\\Opera Software\\Opera Stable\\GPUCache'),
+                os.path.join(self.user_profile, 'AppData\\Local\\Opera Software\\Opera Stable\\Code Cache'),
+            ]
+            
+            # Clean each path
+            for path in opera_paths:
+                if os.path.exists(path):
+                    self._safe_clean_directory(path)
+            
+            # Clean cookies
+            cookies_path = os.path.join(self.user_profile, 'AppData\\Local\\Opera Software\\Opera Stable\\Cookies')
+            if os.path.exists(cookies_path):
+                try:
+                    os.remove(cookies_path)
+                except (PermissionError, OSError):
+                    pass
+            
+            logger.info("Opera cache and cookies cleaned successfully")
+            return True
+        
+        except Exception as e:
+            logger.error(f"Error cleaning Opera cache and cookies: {str(e)}")
+            raise
+    
+    def clean_brave_cache(self):
+        """Clean Brave browser cache and cookies (not history)."""
+        try:
+            # Kill Brave processes first
+            subprocess.run(['taskkill', '/F', '/IM', 'brave.exe'], 
+                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            
+            # Brave cache paths
+            brave_paths = [
+                os.path.join(self.user_profile, 'AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Default\\Cache'),
+                os.path.join(self.user_profile, 'AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Default\\Code Cache'),
+                os.path.join(self.user_profile, 'AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Default\\GPUCache'),
+            ]
+            
+            # Clean each path
+            for path in brave_paths:
+                if os.path.exists(path):
+                    self._safe_clean_directory(path)
+            
+            # Clean cookies
+            cookies_path = os.path.join(self.user_profile, 'AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Default\\Cookies')
+            if os.path.exists(cookies_path):
+                try:
+                    os.remove(cookies_path)
+                except (PermissionError, OSError):
+                    pass
+            
+            logger.info("Brave cache and cookies cleaned successfully")
+            return True
+        
+        except Exception as e:
+            logger.error(f"Error cleaning Brave cache and cookies: {str(e)}")
             raise
     
     def clean_temp_files(self):
@@ -330,6 +445,85 @@ class SystemCleaner:
         
         except Exception as e:
             logger.error(f"Error calculating Recycle Bin size: {str(e)}")
+            return 0
+    
+    def get_firefox_cache_size(self):
+        """Get the size of Firefox cache in bytes."""
+        try:
+            total_size = 0
+            
+            # Find Firefox profile folder
+            firefox_profile_path = os.path.join(self.user_profile, 'AppData\\Roaming\\Mozilla\\Firefox\\Profiles')
+            
+            if os.path.exists(firefox_profile_path):
+                # Firefox often has a randomized profile folder name
+                profiles = [d for d in os.listdir(firefox_profile_path) if os.path.isdir(os.path.join(firefox_profile_path, d))]
+                
+                for profile in profiles:
+                    profile_dir = os.path.join(firefox_profile_path, profile)
+                    
+                    # Cache files
+                    cache_dir = os.path.join(profile_dir, 'cache2')
+                    if os.path.exists(cache_dir):
+                        total_size += self._get_directory_size(cache_dir)
+                    
+                    # Cookies file
+                    cookies_file = os.path.join(profile_dir, 'cookies.sqlite')
+                    if os.path.exists(cookies_file):
+                        total_size += os.path.getsize(cookies_file)
+            
+            return total_size
+        
+        except Exception as e:
+            logger.error(f"Error calculating Firefox cache size: {str(e)}")
+            return 0
+    
+    def get_opera_cache_size(self):
+        """Get the size of Opera cache in bytes."""
+        try:
+            opera_paths = [
+                os.path.join(self.user_profile, 'AppData\\Local\\Opera Software\\Opera Stable\\Cache'),
+                os.path.join(self.user_profile, 'AppData\\Local\\Opera Software\\Opera Stable\\GPUCache'),
+                os.path.join(self.user_profile, 'AppData\\Local\\Opera Software\\Opera Stable\\Code Cache'),
+            ]
+            
+            total_size = 0
+            for path in opera_paths:
+                total_size += self._get_directory_size(path)
+            
+            # Add cookies file size
+            cookies_path = os.path.join(self.user_profile, 'AppData\\Local\\Opera Software\\Opera Stable\\Cookies')
+            if os.path.exists(cookies_path):
+                total_size += os.path.getsize(cookies_path)
+            
+            return total_size
+        
+        except Exception as e:
+            logger.error(f"Error calculating Opera cache size: {str(e)}")
+            return 0
+    
+    def get_brave_cache_size(self):
+        """Get the size of Brave cache in bytes."""
+        try:
+            brave_paths = [
+                os.path.join(self.user_profile, 'AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Default\\Cache'),
+                os.path.join(self.user_profile, 'AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Default\\Code Cache'),
+                os.path.join(self.user_profile, 'AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Default\\GPUCache'),
+            ]
+            
+            total_size = 0
+            for path in brave_paths:
+                total_size += self._get_directory_size(path)
+            
+            # Add cookies file size
+            cookies_path = os.path.join(self.user_profile, 'AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data\\Default\\Cookies')
+            if os.path.exists(cookies_path):
+                total_size += os.path.getsize(cookies_path)
+            
+            return total_size
+        
+        except Exception as e:
+            logger.error(f"Error calculating Brave cache size: {str(e)}")
             return 0
     
     def _get_directory_size(self, path):

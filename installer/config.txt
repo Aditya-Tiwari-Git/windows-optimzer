@@ -1,0 +1,6 @@
+
+;!@Install@!UTF-8!
+Title="Windows System Optimizer Setup"
+BeginPrompt="Do you want to install Windows System Optimizer?"
+RunProgram="install.bat"
+;!@InstallEnd@!
